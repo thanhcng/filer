@@ -46,6 +46,7 @@ describe('fs.rmdir', function() {
     });
   });
 
+
   it('should return an error if the path is not a directory', function(done) {
     var fs = util.fs();
 
@@ -97,4 +98,47 @@ describe('fs.rmdir', function() {
       });
     });
   });
+});
+
+describe('fs.promises.rmdir', function(){
+  
+  beforeEach(function(done){
+    util.setup(function(){
+      var fs = util.fs();
+      fsPromises = fs.promises;
+      done();
+    })
+  });
+  
+  afterEach(util.cleanup);
+
+  it('should return an error if the directory is not empty', function(done) {
+
+      fsPromises.mkdir('/tmp')
+      .then(fsPromises.mkdir('/tmp/mydir'))
+      .then(fsPromises.rmdir('/'))
+      .catch(err => {
+        expect(error).to.exist;
+        expect(error.code).to.equal('ENOTEMPTY');
+        done();
+      });
+
+  });
+ 
+  it('should return an error if the path is not a directory', function(done) {
+
+      fsPromises.mkdir('/tmp')
+      .then(fsPromises.open('/tmp/myfile','w'))
+      .then(filehandle => {
+        return filehandle.close();
+      })
+      .then(fsPromises.rmdir('/tmp/myfile'))
+      .catch(err => {
+        expect(err).to.exist;
+        expect(err.code).to.equal('ENOENT');
+        done();
+      });
+    
+  });
+    
 });
