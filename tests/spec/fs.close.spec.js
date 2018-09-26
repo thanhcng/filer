@@ -31,3 +31,32 @@ describe('fs.close', function() {
     });
   });
 });
+
+describe('fsPromises.close', function() {
+  beforeEach(util.setup);
+  afterEach(util.cleanup);
+
+  it('should be a function', function() {
+    var fsPromises = util.fs().promises;
+    expect(typeof fsPromises.close).to.equal('function');
+  });
+
+  it.only('should release the file handler', function() {
+    var fsPromises = util.fs().promises;
+    var buffer = new Filer.Buffer(0);
+    var filehandle;
+
+    return fsPromises.open('/myfile', 'w')
+      .then((fh) => {
+        filehandle = fh;
+        return filehandle.close();
+      })
+      .then(() => {
+        filehandle.read(buffer, 0, buffer.length, undefined);
+      })
+      .catch(err => {
+        expect(err).to.exist;
+        expect(filehandle.fd).not.to.exist;
+      });
+  });
+});
